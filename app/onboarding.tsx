@@ -4,7 +4,7 @@ import {
   ScrollView, StatusBar,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Colors, Typography, Spacing, Radius } from '@/constants/theme';
 
 const { width, height } = Dimensions.get('window');
@@ -40,6 +40,19 @@ export default function OnboardingScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
   const router = useRouter();
+  const params = useLocalSearchParams();
+
+  const getAuthPath = () => {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) {
+        searchParams.append(key, Array.isArray(value) ? value[0] : value);
+      }
+    });
+
+    const queryString = searchParams.toString();
+    return `/auth${queryString ? `?${queryString}` : ''}`;
+  };
 
   const handleNext = () => {
     if (currentIndex < SLIDES.length - 1) {
@@ -47,11 +60,11 @@ export default function OnboardingScreen() {
       scrollRef.current?.scrollTo({ x: next * width, animated: true });
       setCurrentIndex(next);
     } else {
-      router.replace('/auth');
+      router.replace(getAuthPath());
     }
   };
 
-  const handleSkip = () => router.replace('/auth');
+  const handleSkip = () => router.replace(getAuthPath());
 
   const handleScroll = (event: any) => {
     const idx = Math.round(event.nativeEvent.contentOffset.x / width);

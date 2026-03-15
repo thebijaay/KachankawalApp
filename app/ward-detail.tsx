@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, ActivityIndicator,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
@@ -12,6 +12,13 @@ export default function WardDetailScreen() {
   const ward = WARDS.find(w => w.number === parseInt(wardNum || '1'));
 
   if (!ward) {
+    if (wardNum === undefined) {
+      return (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+        </View>
+      );
+    }
     return (
       <View style={styles.center}>
         <Text>Ward not found</Text>

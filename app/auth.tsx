@@ -4,7 +4,7 @@ import {
   ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, Radius } from '@/constants/theme';
 import { authService } from '@/services/authService';
@@ -24,6 +24,7 @@ export default function AuthScreen() {
   const { login } = useAuth();
   const { showAlert } = useAlert();
   const router = useRouter();
+  const params = useLocalSearchParams();
 
   const handleSendOTP = async () => {
     if (phone.length < 10) {
@@ -61,7 +62,28 @@ export default function AuthScreen() {
     setLoading(false);
     if (res.success && res.user) {
       login(res.user);
-      router.replace('/(tabs)');
+
+      const searchParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value) {
+          searchParams.append(key, Array.isArray(value) ? value[0] : value);
+        }
+      });
+
+      const queryString = searchParams.toString();
+      const suffix = queryString ? `?${queryString}` : '';
+
+      if (params.id) {
+        if (['birth', 'death', 'marriage', 'migration', 'recommendation', 'business'].includes(params.id as string)) {
+          router.replace(`/service-detail${suffix}`);
+          return;
+        }
+        router.replace(`/notice-detail${suffix}`);
+      } else if (params.ward) {
+        router.replace(`/ward-detail${suffix}`);
+      } else {
+        router.replace('/(tabs)');
+      }
     } else {
       showAlert('Error', res.message);
     }
