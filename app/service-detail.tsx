@@ -37,9 +37,16 @@ export default function ServiceDetailScreen() {
   const [appId, setAppId] = useState('');
 
   if (!service) {
+    if (id === undefined) {
+      return (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+        </View>
+      );
+    }
     return (
       <View style={styles.center}>
-        <Text>Service not found</Text>
+        <Text>Service not found: {JSON.stringify(id)}</Text>
       </View>
     );
   }

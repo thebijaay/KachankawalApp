@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -19,6 +19,13 @@ export default function NoticeDetailScreen() {
   const notice = NOTICES.find(n => n.id === id);
 
   if (!notice) {
+    if (id === undefined) {
+      return (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+        </View>
+      );
+    }
     return (
       <View style={styles.center}>
         <Text style={styles.notFound}>Notice not found</Text>
