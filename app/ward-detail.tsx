@@ -4,11 +4,11 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
-import { useLocalSearchParams } from 'expo-router';
+import { useDeepLinkParams } from '@/hooks/useDeepLinkParams';
 import { WARDS } from '@/constants/mockData';
 
 export default function WardDetailScreen() {
-  const { ward: wardNum } = useLocalSearchParams<{ ward: string }>();
+  const { ward: wardNum } = useDeepLinkParams<{ ward: string }>();
   const ward = WARDS.find(w => w.number === parseInt(wardNum || '1'));
 
   if (!ward) {

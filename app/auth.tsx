@@ -7,6 +7,7 @@ import { Image } from 'expo-image';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, Radius } from '@/constants/theme';
+import { useDeepLink } from '@/contexts/DeepLinkContext';
 import { authService } from '@/services/authService';
 import { useAuth } from '@/hooks/useAuth';
 import { useAlert } from '@/template';
@@ -25,6 +26,7 @@ export default function AuthScreen() {
   const { showAlert } = useAlert();
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { setPendingParams } = useDeepLink();
 
   const handleSendOTP = async () => {
     if (phone.length < 10) {
@@ -62,6 +64,11 @@ export default function AuthScreen() {
     setLoading(false);
     if (res.success && res.user) {
       login(res.user);
+
+      // Ensure params are preserved in context
+      if (Object.keys(params).length > 0) {
+        setPendingParams(params);
+      }
 
       const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {

@@ -2,7 +2,7 @@ import React from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, ActivityIndicator,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useDeepLinkParams } from '@/hooks/useDeepLinkParams';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
 import { NOTICES } from '@/constants/mockData';
@@ -15,7 +15,7 @@ const TYPE_CONFIG: Record<string, { icon: React.ComponentProps<typeof MaterialIc
 };
 
 export default function NoticeDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useDeepLinkParams<{ id: string }>();
   const notice = NOTICES.find(n => n.id === id);
 
   if (!notice) {

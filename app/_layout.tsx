@@ -2,13 +2,15 @@ import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AlertProvider } from '@/template';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { DeepLinkProvider } from '@/contexts/DeepLinkContext';
 
 export default function RootLayout() {
   return (
     <AlertProvider>
       <SafeAreaProvider>
         <AuthProvider>
-          <Stack screenOptions={{ headerShown: false }}>
+          <DeepLinkProvider>
+            <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
             <Stack.Screen name="onboarding" />
             <Stack.Screen name="auth" />
@@ -25,6 +27,7 @@ export default function RootLayout() {
             <Stack.Screen name="health" options={{ headerShown: true, title: 'Health & Education', headerTintColor: '#C0392B' }} />
             <Stack.Screen name="events" options={{ headerShown: true, title: 'Events & Programs', headerTintColor: '#C0392B' }} />
           </Stack>
+          </DeepLinkProvider>
         </AuthProvider>
       </SafeAreaProvider>
     </AlertProvider>

@@ -6,6 +6,7 @@ import {
 import { Image } from 'expo-image';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Colors, Typography, Spacing, Radius } from '@/constants/theme';
+import { useDeepLink } from '@/contexts/DeepLinkContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -41,8 +42,14 @@ export default function OnboardingScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { setPendingParams } = useDeepLink();
 
   const getAuthPath = () => {
+    // Ensure params are preserved in context
+    if (Object.keys(params).length > 0) {
+      setPendingParams(params);
+    }
+
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
       if (value) {

@@ -3,7 +3,8 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   TextInput, ActivityIndicator, KeyboardAvoidingView, Platform,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useDeepLinkParams } from '@/hooks/useDeepLinkParams';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
 import { DIGITAL_SERVICES } from '@/constants/mockData';
@@ -23,7 +24,7 @@ const SERVICE_COLORS: Record<string, string> = {
 };
 
 export default function ServiceDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useDeepLinkParams<{ id: string }>();
   const service = DIGITAL_SERVICES.find(s => s.id === id);
   const { user } = useAuth();
   const { showAlert } = useAlert();

@@ -3,14 +3,21 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { Colors } from '@/constants/theme';
+import { useDeepLink } from '@/contexts/DeepLinkContext';
 
 export default function IndexScreen() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { setPendingParams } = useDeepLink();
 
   useEffect(() => {
     if (!isLoading) {
+      // Capture parameters into context as early as possible
+      if (Object.keys(params).length > 0) {
+        setPendingParams(params);
+      }
+
       const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
         if (value) {
@@ -39,7 +46,7 @@ export default function IndexScreen() {
         router.replace(`/onboarding${suffix}`);
       }
     }
-  }, [isLoading, user, params]);
+  }, [isLoading, user, params, setPendingParams]);
 
   return (
     <View style={styles.container}>
