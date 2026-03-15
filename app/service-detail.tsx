@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   TextInput, ActivityIndicator, KeyboardAvoidingView, Platform,
@@ -25,6 +25,7 @@ const SERVICE_COLORS: Record<string, string> = {
 
 export default function ServiceDetailScreen() {
   const { id } = useDeepLinkParams<{ id: string }>();
+  const [isTimedOut, setIsTimedOut] = useState(false);
   const service = DIGITAL_SERVICES.find(s => s.id === id);
   const { user } = useAuth();
   const { showAlert } = useAlert();
@@ -36,6 +37,28 @@ export default function ServiceDetailScreen() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [appId, setAppId] = useState('');
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (!service && id === undefined) {
+      timer = setTimeout(() => {
+        setIsTimedOut(true);
+      }, 5000);
+    }
+    return () => clearTimeout(timer);
+  }, [service, id]);
+
+  if (isTimedOut) {
+    return (
+      <View style={styles.center}>
+        <MaterialIcons name="error-outline" size={48} color={Colors.error} />
+        <Text style={styles.notFound}>Unable to resolve service details. Please try again.</Text>
+        <TouchableOpacity style={styles.homeBtn} onPress={() => router.replace('/')}>
+          <Text style={styles.homeBtnText}>Go Home</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (!service) {
     if (id === undefined) {
@@ -384,12 +407,12 @@ const styles = StyleSheet.create({
     fontSize: Typography.base,
   },
   homeBtn: {
-    width: '100%',
     padding: Spacing.md,
     borderRadius: Radius.md,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: Colors.border,
+    marginTop: Spacing.md,
   },
   homeBtnText: {
     color: Colors.textSecondary,

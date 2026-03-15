@@ -1,13 +1,14 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useDeepLink } from '@/contexts/DeepLinkContext';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { Platform } from 'react-native';
 
 export function useDeepLinkParams<T extends Record<string, string | string[] | undefined>>() {
   const localParams = useLocalSearchParams<T>();
-  const { pendingParams, getAndClearParams } = useDeepLink();
+  const { pendingParams, clearPendingParams } = useDeepLink();
 
   const resolvedParams = useMemo(() => {
+    console.log('[useDeepLinkParams] Attempting resolution. Local:', localParams, 'Pending:', pendingParams);
     // 1. Try local search params first
     if (Object.keys(localParams).length > 0) {
       console.log('[useDeepLinkParams] Resolved from local params:', localParams);
@@ -17,8 +18,7 @@ export function useDeepLinkParams<T extends Record<string, string | string[] | u
     // 2. Try pending params from context
     if (pendingParams && Object.keys(pendingParams).length > 0) {
       console.log('[useDeepLinkParams] Resolved from pending params:', pendingParams);
-      // We consume the params here
-      return getAndClearParams() as T;
+      return pendingParams as T;
     }
 
     // 3. Fallback for Web: Parse URL directly if others fail
@@ -38,7 +38,18 @@ export function useDeepLinkParams<T extends Record<string, string | string[] | u
 
     console.log('[useDeepLinkParams] No params resolved');
     return {} as T;
-  }, [localParams, pendingParams, getAndClearParams]);
+  }, [localParams, pendingParams]);
+
+  // Clear pending params after they have been resolved and component has mounted/updated
+  useEffect(() => {
+    if (pendingParams && Object.keys(pendingParams).length > 0) {
+      // Small delay to ensure they are consumed
+      const timer = setTimeout(() => {
+        clearPendingParams();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [pendingParams, clearPendingParams]);
 
   return resolvedParams;
 }

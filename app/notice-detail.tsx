@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, ActivityIndicator,
 } from 'react-native';
 import { useDeepLinkParams } from '@/hooks/useDeepLinkParams';
+import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
 import { NOTICES } from '@/constants/mockData';
@@ -16,7 +17,31 @@ const TYPE_CONFIG: Record<string, { icon: React.ComponentProps<typeof MaterialIc
 
 export default function NoticeDetailScreen() {
   const { id } = useDeepLinkParams<{ id: string }>();
+  const [isTimedOut, setIsTimedOut] = useState(false);
+  const router = useRouter();
   const notice = NOTICES.find(n => n.id === id);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (!notice && id === undefined) {
+      timer = setTimeout(() => {
+        setIsTimedOut(true);
+      }, 5000);
+    }
+    return () => clearTimeout(timer);
+  }, [notice, id]);
+
+  if (isTimedOut) {
+    return (
+      <View style={styles.center}>
+        <MaterialIcons name="error-outline" size={48} color={Colors.error} />
+        <Text style={styles.notFound}>Unable to resolve notice details.</Text>
+        <TouchableOpacity style={styles.homeBtn} onPress={() => router.replace('/')}>
+          <Text style={styles.homeBtnText}>Go Home</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (!notice) {
     if (id === undefined) {
@@ -179,5 +204,19 @@ const styles = StyleSheet.create({
   footerSub: {
     fontSize: Typography.xs,
     color: Colors.textMuted,
+  },
+  homeBtn: {
+    padding: Spacing.md,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginTop: Spacing.md,
+    width: '100%',
+  },
+  homeBtnText: {
+    color: Colors.textSecondary,
+    fontWeight: Typography.medium,
+    fontSize: Typography.base,
   },
 });

@@ -1,15 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, ActivityIndicator,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { Colors, Typography, Spacing, Radius, Shadow } from '@/constants/theme';
 import { useDeepLinkParams } from '@/hooks/useDeepLinkParams';
 import { WARDS } from '@/constants/mockData';
 
 export default function WardDetailScreen() {
   const { ward: wardNum } = useDeepLinkParams<{ ward: string }>();
+  const [isTimedOut, setIsTimedOut] = useState(false);
+  const router = useRouter();
   const ward = WARDS.find(w => w.number === parseInt(wardNum || '1'));
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (!ward && wardNum === undefined) {
+      timer = setTimeout(() => {
+        setIsTimedOut(true);
+      }, 5000);
+    }
+    return () => clearTimeout(timer);
+  }, [ward, wardNum]);
+
+  if (isTimedOut) {
+    return (
+      <View style={styles.center}>
+        <MaterialIcons name="error-outline" size={48} color={Colors.error} />
+        <Text style={styles.notFound}>Unable to resolve ward details.</Text>
+        <TouchableOpacity style={styles.homeBtn} onPress={() => router.replace('/')}>
+          <Text style={styles.homeBtnText}>Go Home</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (!ward) {
     if (wardNum === undefined) {
@@ -247,5 +272,25 @@ const styles = StyleSheet.create({
     color: Colors.textOnPrimary,
     fontWeight: Typography.semiBold,
     fontSize: Typography.sm,
+  },
+  notFound: {
+    fontSize: Typography.base,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: Spacing.md,
+  },
+  homeBtn: {
+    padding: Spacing.md,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    marginTop: Spacing.md,
+    width: '100%',
+  },
+  homeBtnText: {
+    color: Colors.textSecondary,
+    fontWeight: Typography.medium,
+    fontSize: Typography.base,
   },
 });
