@@ -7,6 +7,8 @@ import { Image } from 'expo-image';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, Radius } from '@/constants/theme';
+import { useDeepLink } from '@/contexts/DeepLinkContext';
+import { DIGITAL_SERVICES } from '@/constants/mockData';
 import { authService } from '@/services/authService';
 import { useAuth } from '@/hooks/useAuth';
 import { useAlert } from '@/template';
@@ -25,6 +27,7 @@ export default function AuthScreen() {
   const { showAlert } = useAlert();
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { setPendingParams } = useDeepLink();
 
   const handleSendOTP = async () => {
     if (phone.length < 10) {
@@ -63,24 +66,23 @@ export default function AuthScreen() {
     if (res.success && res.user) {
       login(res.user);
 
-      const searchParams = new URLSearchParams();
-      Object.entries(params).forEach(([key, value]) => {
-        if (value) {
-          searchParams.append(key, Array.isArray(value) ? value[0] : value);
-        }
-      });
-
-      const queryString = searchParams.toString();
-      const suffix = queryString ? `?${queryString}` : '';
+      // Ensure params are preserved in context
+      if (Object.keys(params).length > 0) {
+        setPendingParams(params);
+      }
 
       if (params.id) {
-        if (['birth', 'death', 'marriage', 'migration', 'recommendation', 'business'].includes(params.id as string)) {
-          router.replace(`/service-detail${suffix}`);
-          return;
-        }
-        router.replace(`/notice-detail${suffix}`);
+        const serviceIds = DIGITAL_SERVICES.map(s => s.id);
+        const isService = serviceIds.includes(params.id as string);
+        router.replace({
+          pathname: isService ? '/service-detail' : '/notice-detail',
+          params: params as any
+        });
       } else if (params.ward) {
-        router.replace(`/ward-detail${suffix}`);
+        router.replace({
+          pathname: '/ward-detail',
+          params: params as any
+        });
       } else {
         router.replace('/(tabs)');
       }

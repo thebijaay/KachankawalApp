@@ -3,14 +3,24 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { Colors } from '@/constants/theme';
+import { useDeepLink } from '@/contexts/DeepLinkContext';
+import { DIGITAL_SERVICES } from '@/constants/mockData';
 
 export default function IndexScreen() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { setPendingParams } = useDeepLink();
 
   useEffect(() => {
+    console.log('[IndexScreen] Mounted. Params:', params, 'User:', user?.isLoggedIn, 'Loading:', isLoading);
     if (!isLoading) {
+      // Capture parameters into context as early as possible
+      if (Object.keys(params).length > 0) {
+        console.log('[IndexScreen] Capturing params into context');
+        setPendingParams(params);
+      }
+
       const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
         if (value) {
@@ -24,14 +34,18 @@ export default function IndexScreen() {
       if (user?.isLoggedIn) {
         // If we have an ID, we might be trying to go to a detail page
         if (params.id) {
-          if (['birth', 'death', 'marriage', 'migration', 'recommendation', 'business'].includes(params.id as string)) {
-            router.replace(`/service-detail${suffix}`);
-            return;
-          }
-          router.replace(`/notice-detail${suffix}`);
+          const serviceIds = DIGITAL_SERVICES.map(s => s.id);
+          const isService = serviceIds.includes(params.id as string);
+          router.replace({
+            pathname: isService ? '/service-detail' : '/notice-detail',
+            params: params as any
+          });
           return;
         } else if (params.ward) {
-          router.replace(`/ward-detail${suffix}`);
+          router.replace({
+            pathname: '/ward-detail',
+            params: params as any
+          });
           return;
         }
         router.replace('/(tabs)');
@@ -39,7 +53,7 @@ export default function IndexScreen() {
         router.replace(`/onboarding${suffix}`);
       }
     }
-  }, [isLoading, user, params]);
+  }, [isLoading, user, params, setPendingParams]);
 
   return (
     <View style={styles.container}>
